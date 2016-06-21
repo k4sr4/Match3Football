@@ -7,14 +7,14 @@ using UnityEngine.UI;
 
 public class ShapesManager : MonoBehaviour
 {
-    public Text DebugText, ScoreText;
-    public bool ShowDebugInfo = false;    
+    //public Text DebugText, ScoreText;
+    //public bool ShowDebugInfo = false;    
 
     public ShapesArray shapes;
 
-    private int score;
+    //private int score;
 
-    public readonly Vector2 BottomRight = new Vector2(-2.37f, -4.27f);
+    public Vector2 BottomRight = new Vector2(-1.37f, -2.27f);
     public readonly Vector2 CandySize = new Vector2(0.7f, 0.7f);
 
     private GameState state = GameState.None;
@@ -30,10 +30,19 @@ public class ShapesManager : MonoBehaviour
 
     public SoundManager soundManager;
 
-    void Awake()
+    public int turn = 1;
+    public Text player1text, player2text;
+
+    public bool timedTurns = false;
+    public Text timerText;
+    public float turnTime = 10f;
+    float minutes;
+    float seconds;
+
+    /*void Awake()
     {
         DebugText.enabled = ShowDebugInfo;
-    }
+    }*/
 
     // Use this for initialization
     void Start()
@@ -43,6 +52,10 @@ public class ShapesManager : MonoBehaviour
         InitializeCandyAndSpawnPositions();
 
         StartCheckForPotentialMatches();
+
+        turn = 1;
+        player1text.color = Color.yellow;
+        player1text.fontSize = 26;
     }
 
     /// Initialize shapes
@@ -59,7 +72,7 @@ public class ShapesManager : MonoBehaviour
 
     public void InitializeCandyAndSpawnPositions()
     {
-        InitializeVariables();
+        //InitializeVariables();
 
         if (shapes != null)
             DestroyAllCandy();
@@ -136,8 +149,8 @@ public class ShapesManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if (ShowDebugInfo)
-            DebugText.text = DebugUtilities.GetArrayContents(shapes);
+        /*if (ShowDebugInfo)
+            DebugText.text = DebugUtilities.GetArrayContents(shapes);*/
 
         if (state == GameState.None)
         {
@@ -179,10 +192,52 @@ public class ShapesManager : MonoBehaviour
                     {
                         state = GameState.Animating;
                         FixSortingLayer(hitGo, hit.collider.gameObject);
-                        StartCoroutine(FindMatchesAndCollapse(hit));
+                        StartCoroutine(FindMatchesAndCollapse(hit));                        
                     }
                 }
             }
+        }
+
+        if (timedTurns)
+        {
+            if (turnTime > 0)
+            {
+                minutes = turnTime / 60;
+                seconds = turnTime % 60;
+
+                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+                turnTime -= Time.deltaTime;
+            }
+            else
+            {
+                ChangeTurn();
+                turnTime = 10f;
+            }
+        }
+    }
+
+    private void ChangeTurn()
+    {
+        if (turn == 1)
+        {
+            turn = 2;
+
+            player2text.color = Color.yellow;
+            player2text.fontSize = 26;
+
+            player1text.color = Color.black;
+            player1text.fontSize = 20;
+        }
+        else
+        {
+            turn = 1;
+
+            player1text.color = Color.yellow;
+            player1text.fontSize = 26;
+
+            player2text.color = Color.black;
+            player2text.fontSize = 20;
         }
     }
 
@@ -230,12 +285,15 @@ public class ShapesManager : MonoBehaviour
         while (totalMatches.Count() >= Constants.MinimumMatches)
         {
             //increase score
-            IncreaseScore((totalMatches.Count() - 2) * Constants.Match3Score);
+            /*IncreaseScore((totalMatches.Count() - 2) * Constants.Match3Score);
 
             if (timesRun >= 2)
-                IncreaseScore(Constants.SubsequentMatchScore);
+                IncreaseScore(Constants.SubsequentMatchScore);*/
 
             soundManager.PlayCrincle();
+
+            if(!timedTurns && timesRun == 1)
+                ChangeTurn();
 
             foreach (var item in totalMatches)
             {
@@ -323,7 +381,7 @@ public class ShapesManager : MonoBehaviour
         return CandyPrefabs[Random.Range(0, CandyPrefabs.Length)];
     }
 
-    private void InitializeVariables()
+    /*private void InitializeVariables()
     {
         score = 0;
         ShowScore();
@@ -338,7 +396,7 @@ public class ShapesManager : MonoBehaviour
     private void ShowScore()
     {
         ScoreText.text = "Score: " + score.ToString();
-    }
+    }*/
 
     /// Get a random explosion
     private GameObject GetRandomExplosion()
@@ -393,6 +451,16 @@ public class ShapesManager : MonoBehaviour
                 StartCoroutine(AnimatePotentialMatchesCoroutine);
                 yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
             }
+        }
+        else
+        {
+            Debug.Log("Locked Situation");
+            //Restart the board
+            InitializeTypesOnPrefabShapes();
+
+            InitializeCandyAndSpawnPositions();
+
+            StartCheckForPotentialMatches();
         }
     }
 }
