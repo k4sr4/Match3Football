@@ -38,6 +38,7 @@ public class ShapesManager : MonoBehaviour
     public float turnTime = 10f;
     float minutes;
     float seconds;
+    public Text bonusText;
 
     /*void Awake()
     {
@@ -198,6 +199,7 @@ public class ShapesManager : MonoBehaviour
             }
         }
 
+        //handles the change turns in timed turn mode
         if (timedTurns)
         {
             if (turnTime > 0)
@@ -255,6 +257,8 @@ public class ShapesManager : MonoBehaviour
 
     private IEnumerator FindMatchesAndCollapse(RaycastHit2D hit2)
     {
+        bool addBonus = false;
+
         //get the second item that was part of the swipe
         var hitGo2 = hit2.collider.gameObject;
         shapes.Swap(hitGo, hitGo2);
@@ -281,6 +285,13 @@ public class ShapesManager : MonoBehaviour
             shapes.UndoSwap();
         }
 
+        //if more than 3 matches and no Bonus is contained in the line, we will award a new Bonus
+        if (totalMatches.Count() >= Constants.MinimumMatchesForBonus && !timedTurns)
+        {
+            addBonus = true;
+            StartCoroutine(DisplayBonusText());
+        }
+
         int timesRun = 1;
         while (totalMatches.Count() >= Constants.MinimumMatches)
         {
@@ -292,7 +303,8 @@ public class ShapesManager : MonoBehaviour
 
             soundManager.PlayCrincle();
 
-            if(!timedTurns && timesRun == 1)
+            //if we have not hit bonus and we don't have timed turns, change turn
+            if (!timedTurns && timesRun == 1 && !addBonus)
                 ChangeTurn();
 
             foreach (var item in totalMatches)
@@ -462,5 +474,14 @@ public class ShapesManager : MonoBehaviour
 
             StartCheckForPotentialMatches();
         }
+    }
+
+    private IEnumerator DisplayBonusText()
+    {
+        bonusText.enabled = true;
+
+        yield return new WaitForSeconds(2.0f);
+
+        bonusText.enabled = false;
     }
 }
