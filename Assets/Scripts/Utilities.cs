@@ -95,7 +95,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row - 1, column - 1]
+                                    shapes[row - 1, column - 1],
+                                    shapes[row, column - 1]
                                 };
 
                 /* example *\
@@ -113,7 +114,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row + 1, column - 1]
+                                    shapes[row + 1, column - 1],
+                                    shapes[row, column - 1]
                                 };
 
                 /* example *\
@@ -144,7 +146,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row - 1, column + 2]
+                                    shapes[row - 1, column + 2],
+                                    shapes[row , column + 2]
                                 };
 
                 /* example *\
@@ -162,7 +165,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row + 1, column + 2]
+                                    shapes[row + 1, column + 2],
+                                    shapes[row , column + 2]
                                 };
 
                 /* example *\
@@ -190,7 +194,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row, column + 3]
+                                    shapes[row, column + 3],
+                                    shapes[row , column + 2]
                                 };
             }
 
@@ -213,7 +218,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row, column + 1],
-                                    shapes[row, column -2]
+                                    shapes[row, column -2],
+                                    shapes[row , column -1]
                                 };
             }
 
@@ -242,7 +248,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row + 1, column],
-                                    shapes[row - 1, column -1]
+                                    shapes[row - 1, column -1],
+                                    shapes[row - 1, column]
                                 };
 
                 /* example *\
@@ -260,7 +267,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row + 1, column],
-                                    shapes[row - 1, column + 1]
+                                    shapes[row - 1, column + 1],
+                                    shapes[row - 1, column]
                                 };
 
                 /* example *\
@@ -289,7 +297,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row + 1, column],
-                                    shapes[row + 2, column -1]
+                                    shapes[row + 2, column -1],
+                                    shapes[row + 2, column]
                                 };
 
                 /* example *\
@@ -307,7 +316,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row+1, column],
-                                    shapes[row + 2, column + 1]
+                                    shapes[row + 2, column + 1],
+                                    shapes[row + 2, column]
                                 };
 
                 /* example *\
@@ -336,7 +346,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row + 1, column],
-                                    shapes[row + 3, column]
+                                    shapes[row + 3, column],
+                                    shapes[row + 2, column]
                                 };
             }
         }
@@ -360,7 +371,8 @@ public static class Utilities
                                 {
                                     shapes[row, column],
                                     shapes[row + 1, column],
-                                    shapes[row - 2, column]
+                                    shapes[row - 2, column],
+                                    shapes[row - 1, column]
                                 };
             }
         }

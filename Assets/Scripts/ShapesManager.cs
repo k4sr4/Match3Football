@@ -40,6 +40,8 @@ public class ShapesManager : MonoBehaviour
     float seconds;
     public Text bonusText;
 
+    public bool AI = false;
+
     /*void Awake()
     {
         DebugText.enabled = ShowDebugInfo;
@@ -193,7 +195,7 @@ public class ShapesManager : MonoBehaviour
                     {
                         state = GameState.Animating;
                         FixSortingLayer(hitGo, hit.collider.gameObject);
-                        StartCoroutine(FindMatchesAndCollapse(hit));                        
+                        StartCoroutine(FindMatchesAndCollapse(hit.collider.gameObject));                        
                     }
                 }
             }
@@ -255,12 +257,10 @@ public class ShapesManager : MonoBehaviour
         }
     }
 
-    private IEnumerator FindMatchesAndCollapse(RaycastHit2D hit2)
+    private IEnumerator FindMatchesAndCollapse(GameObject hitGo2)
     {
         bool addBonus = false;
 
-        //get the second item that was part of the swipe
-        var hitGo2 = hit2.collider.gameObject;
         shapes.Swap(hitGo, hitGo2);
 
         //move the swapped ones
@@ -454,14 +454,29 @@ public class ShapesManager : MonoBehaviour
     {
         yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
         potentialMatches = Utilities.GetPotentialMatches(shapes);
+        List<GameObject> animateItems = new List<GameObject>();
+
+        foreach (var item in potentialMatches)
+        {
+            animateItems.Add(item);
+        }
+        animateItems.RemoveAt(animateItems.Count - 1);
+
         if (potentialMatches != null)
         {
-            while (true)
+            if (AI && turn == 2)
             {
-
-                AnimatePotentialMatchesCoroutine = Utilities.AnimatePotentialMatches(potentialMatches);
-                StartCoroutine(AnimatePotentialMatchesCoroutine);
-                yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
+                AIMatchPotential(potentialMatches);
+            }
+            else
+            {
+                while (true)
+                {
+                    
+                    AnimatePotentialMatchesCoroutine = Utilities.AnimatePotentialMatches(animateItems);
+                    StartCoroutine(AnimatePotentialMatchesCoroutine);
+                    yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
+                }
             }
         }
         else
@@ -474,6 +489,21 @@ public class ShapesManager : MonoBehaviour
 
             StartCheckForPotentialMatches();
         }
+    }
+
+    private void AIMatchPotential(IEnumerable<GameObject> potentialMatches)
+    {
+        List<GameObject> blocks = new List<GameObject>();
+
+        foreach (GameObject item in potentialMatches)
+        {
+            blocks.Add(item);
+        }
+
+        hitGo = blocks.ElementAt(blocks.Count - 2);
+        GameObject hitGo2 = blocks.ElementAt(blocks.Count - 1);
+
+        StartCoroutine(FindMatchesAndCollapse(hitGo2));
     }
 
     private IEnumerator DisplayBonusText()
