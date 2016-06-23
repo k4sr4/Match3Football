@@ -452,7 +452,14 @@ public class ShapesManager : MonoBehaviour
     /// Finds potential matches
     private IEnumerator CheckPotentialMatches()
     {
-        yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
+        if (AI)
+        {
+            yield return new WaitForSeconds(Constants.AIWaitTime);
+        }
+        else
+        {
+            yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
+        }
         potentialMatches = Utilities.GetPotentialMatches(shapes);
         List<GameObject> animateItems = new List<GameObject>();
 
@@ -472,7 +479,11 @@ public class ShapesManager : MonoBehaviour
             {
                 while (true)
                 {
-                    
+                    if (AI && turn == 2)
+                    {
+                        StartCheckForPotentialMatches();
+                        break;
+                    }
                     AnimatePotentialMatchesCoroutine = Utilities.AnimatePotentialMatches(animateItems);
                     StartCoroutine(AnimatePotentialMatchesCoroutine);
                     yield return new WaitForSeconds(Constants.WaitBeforePotentialMatchesCheck);
