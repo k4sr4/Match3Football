@@ -24,6 +24,8 @@ using System.Text;
         public static readonly int SubsequentMatchScore = 1000;
 
         public static readonly float AIWaitTime = 1f;
+
+        public static readonly float DamageDelay = 1f;
     }
 
    

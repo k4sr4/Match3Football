@@ -40,6 +40,14 @@ public class ShapesManager : MonoBehaviour
     float seconds;
     public Text bonusText;
 
+    public int p1Health = 100;
+    public int p2Health = 100;
+    public int damageMultiplier = 5;
+    public Scrollbar healthBar1;
+    public Scrollbar healthBar2;
+    public int damageDealt;
+    public Text damageText;
+
     public bool AI = false;
 
     /*void Awake()
@@ -260,6 +268,8 @@ public class ShapesManager : MonoBehaviour
     private IEnumerator FindMatchesAndCollapse(GameObject hitGo2)
     {
         bool addBonus = false;
+        bool isBall = false;
+        int numBalls = 0;
 
         shapes.Swap(hitGo, hitGo2);
 
@@ -292,7 +302,7 @@ public class ShapesManager : MonoBehaviour
             StartCoroutine(DisplayBonusText());
         }
 
-        int timesRun = 1;
+        int timesRun = 1; //can be used for subsequent matching bonus point
         while (totalMatches.Count() >= Constants.MinimumMatches)
         {
             //increase score
@@ -301,17 +311,24 @@ public class ShapesManager : MonoBehaviour
             if (timesRun >= 2)
                 IncreaseScore(Constants.SubsequentMatchScore);*/
 
-            soundManager.PlayCrincle();
+            isBall = false;
+            numBalls = 0;
 
-            //if we have not hit bonus and we don't have timed turns, change turn
-            if (!timedTurns && timesRun == 1 && !addBonus)
-                ChangeTurn();
+            soundManager.PlayCrincle();
 
             foreach (var item in totalMatches)
             {
+                if (item.GetComponent<Shape>().Type == "Ball")
+                {
+                    isBall = true;
+                    numBalls++;
+                }
                 shapes.Remove(item);
                 RemoveFromScene(item);
             }
+
+            if (isBall)
+                DealDamage(numBalls);
 
             //get the columns that we had a collapse
             var columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
@@ -333,6 +350,10 @@ public class ShapesManager : MonoBehaviour
             //search if there are matches with the new/collapsed items
             totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
                 Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+
+            //if we have not hit bonus and we don't have timed turns, change turn
+            if (!timedTurns && !addBonus && totalMatches.Count() < Constants.MinimumMatches)
+                ChangeTurn();
 
             timesRun++;
         }
@@ -471,8 +492,8 @@ public class ShapesManager : MonoBehaviour
 
         if (potentialMatches != null)
         {
-            if (AI && turn == 2)
-            {
+         
+            if (AI && turn == 2)   {
                 AIMatchPotential(potentialMatches);
             }
             else
@@ -524,5 +545,33 @@ public class ShapesManager : MonoBehaviour
         yield return new WaitForSeconds(2.0f);
 
         bonusText.enabled = false;
+    }
+
+    private void DealDamage(int damageAmount)
+    {
+        if (turn == 1)
+        {
+            damageDealt = damageAmount * damageMultiplier;
+            p2Health -= damageDealt;
+            healthBar2.size = p2Health / 100f;
+            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity);            
+        }
+        else if (turn == 2)
+        {
+            damageDealt = damageAmount * damageMultiplier;
+            p1Health -= damageDealt;
+            healthBar1.size = p1Health / 100f;
+            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); 
+        }
+    }
+
+    public int GetTurn()
+    {
+        return turn;
+    }
+
+    public int GetDamageDealt()
+    {
+        return -damageDealt;
     }
 }
