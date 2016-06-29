@@ -32,8 +32,7 @@ public class ShapesManager : MonoBehaviour
 
     public int turn = 1;
     public Text player1text, player2text;
-
-    public bool timedTurns = false;
+    
     public Text timerText;
     public float turnTime = 10f;
     float minutes;
@@ -48,6 +47,7 @@ public class ShapesManager : MonoBehaviour
     public int damageDealt;
     public Text damageText;
 
+    public bool timedTurns = false;
     public bool AI = false;
 
     /*void Awake()
@@ -282,8 +282,8 @@ public class ShapesManager : MonoBehaviour
         var hitGomatchesInfo = shapes.GetMatches(hitGo);
         var hitGo2matchesInfo = shapes.GetMatches(hitGo2);
 
-        var totalMatches = hitGomatchesInfo.MatchedCandy
-            .Union(hitGo2matchesInfo.MatchedCandy).Distinct();
+        var totalMatches = hitGomatchesInfo.MatchedBlock
+            .Union(hitGo2matchesInfo.MatchedBlock).Distinct();
 
         //if user's swap didn't create at least a 3-match, undo their swap
         if (totalMatches.Count() < Constants.MinimumMatches)
@@ -296,7 +296,7 @@ public class ShapesManager : MonoBehaviour
         }
 
         //if more than 3 matches and no Bonus is contained in the line, we will award a new Bonus
-        if (totalMatches.Count() >= Constants.MinimumMatchesForBonus && !timedTurns)
+        if ((hitGomatchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus || hitGo2matchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus) && !timedTurns)
         {
             addBonus = true;
             StartCoroutine(DisplayBonusText());

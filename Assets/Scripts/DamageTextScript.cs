@@ -25,7 +25,7 @@ public class DamageTextScript : MonoBehaviour {
             maxX = -190f;
         }
 
-        this.transform.parent = GameObject.Find("Canvas").transform;
+        this.transform.SetParent(GameObject.Find("Canvas").transform, false);
         GetComponent<RectTransform>().localPosition = new Vector3(Random.Range(minX, maxX), Random.Range(minY, maxY), 0f);
     }
 

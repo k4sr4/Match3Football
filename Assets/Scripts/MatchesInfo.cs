@@ -7,21 +7,21 @@ using UnityEngine;
 
 public class MatchesInfo
 {
-    private List<GameObject> matchedCandies;
+    private List<GameObject> matchedBlocks;
 
     /// Returns distinct list of matched candy
-    public IEnumerable<GameObject> MatchedCandy
+    public IEnumerable<GameObject> MatchedBlock
     {
         get
         {
-            return matchedCandies.Distinct();
+            return matchedBlocks.Distinct();
         }
     }
 
     public void AddObject(GameObject go)
     {
-        if (!matchedCandies.Contains(go))
-            matchedCandies.Add(go);
+        if (!matchedBlocks.Contains(go))
+            matchedBlocks.Add(go);
     }
 
     public void AddObjectRange(IEnumerable<GameObject> gos)
@@ -34,7 +34,7 @@ public class MatchesInfo
 
     public MatchesInfo()
     {
-        matchedCandies = new List<GameObject>();        
+        matchedBlocks = new List<GameObject>();        
     }    
 }
 

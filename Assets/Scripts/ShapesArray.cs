@@ -77,7 +77,7 @@ public class ShapesArray
         List<GameObject> matches = new List<GameObject>();
         foreach (var go in gos)
         {
-            matches.AddRange(GetMatches(go).MatchedCandy);
+            matches.AddRange(GetMatches(go).MatchedBlock);
         }
         return matches.Distinct();
     }
