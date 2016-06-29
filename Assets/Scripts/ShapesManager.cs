@@ -42,10 +42,13 @@ public class ShapesManager : MonoBehaviour
     public int p1Health = 100;
     public int p2Health = 100;
     public int damageMultiplier = 5;
-    public Scrollbar healthBar1;
-    public Scrollbar healthBar2;
+    public Scrollbar healthBar1, healthBar2;
     public int damageDealt;
     public Text damageText;
+    public Text hp1, hp2;
+    public Text goals1Text, goals2Text;
+    private int goals1 = 0;
+    private int goals2 = 0;
 
     public bool timedTurns = false;
     public bool AI = false;
@@ -554,14 +557,36 @@ public class ShapesManager : MonoBehaviour
             damageDealt = damageAmount * damageMultiplier;
             p2Health -= damageDealt;
             healthBar2.size = p2Health / 100f;
-            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity);            
+            hp2.text = "HP = " + p2Health.ToString();
+            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); //damage text
+
+            //When player 1 scores a goal
+            if (p2Health <= 0)
+            {
+                goals1 += 1;
+                goals1Text.text = goals1.ToString();
+                p2Health = 100;
+                healthBar2.size = p2Health / 100f;
+                hp2.text = "HP = " + p2Health.ToString();
+            }
         }
         else if (turn == 2)
         {
             damageDealt = damageAmount * damageMultiplier;
             p1Health -= damageDealt;
             healthBar1.size = p1Health / 100f;
-            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); 
+            hp1.text = "HP = " + p1Health.ToString();
+            Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); //damage text
+
+            //When player 1 scores a goal
+            if (p1Health <= 0)
+            {
+                goals2 += 1;
+                goals2Text.text = goals2.ToString();
+                p1Health = 100;                
+                healthBar1.size = p1Health / 100f;
+                hp1.text = "HP = " + p1Health.ToString();
+            }
         }
     }
 
