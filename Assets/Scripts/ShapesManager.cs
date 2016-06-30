@@ -50,6 +50,11 @@ public class ShapesManager : MonoBehaviour
     private int goals1 = 0;
     private int goals2 = 0;
 
+    private int[] p1Attr = {0, 0, 0, 0, 0};
+    private int[] p2Attr = {0, 0, 0, 0, 0};
+    public Scrollbar[] attrBars;
+    public Text[] attrTexts;
+
     public bool timedTurns = false;
     public bool AI = false;
 
@@ -271,8 +276,20 @@ public class ShapesManager : MonoBehaviour
     private IEnumerator FindMatchesAndCollapse(GameObject hitGo2)
     {
         bool addBonus = false;
+
         bool isBall = false;
+        bool isGoalie = false;
+        bool isRef = false;
+        bool isBlue = false;
+        bool isGreen = false;
+        bool isRed = false;
+
         int numBalls = 0;
+        int numGoalies = 0;
+        int numRefs = 0;
+        int numBlues = 0;
+        int numGreens = 0;
+        int numReds = 0;
 
         shapes.Swap(hitGo, hitGo2);
 
@@ -315,7 +332,18 @@ public class ShapesManager : MonoBehaviour
                 IncreaseScore(Constants.SubsequentMatchScore);*/
 
             isBall = false;
+            isGoalie = false;
+            isRef = false;
+            isBlue = false;
+            isGreen = false;
+            isRed = false;
+            
             numBalls = 0;
+            numGoalies = 0;
+            numRefs = 0;
+            numBlues = 0;
+            numGreens = 0;
+            numReds = 0;
 
             soundManager.PlayCrincle();
 
@@ -326,12 +354,60 @@ public class ShapesManager : MonoBehaviour
                     isBall = true;
                     numBalls++;
                 }
+                else if (item.GetComponent<Shape>().Type == "Goalie")
+                {
+                    isGoalie = true;
+                    numGoalies++;
+                }
+                else if (item.GetComponent<Shape>().Type == "Ref")
+                {
+                    isRef = true;
+                    numRefs++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_blue")
+                {
+                    isBlue = true;
+                    numBlues++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_green")
+                {
+                    isGreen = true;
+                    numGreens++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_red")
+                {
+                    isRed = true;
+                    numReds++;
+                }
+
                 shapes.Remove(item);
                 RemoveFromScene(item);
             }
 
             if (isBall)
+            {
                 DealDamage(numBalls);
+            }
+            if (isGoalie)
+            {
+                AddAttribute(0, numGoalies);
+            }
+            if (isRef)
+            {
+                AddAttribute(1, numRefs);
+            }
+            if (isBlue)
+            {
+                AddAttribute(2, numBlues);
+            }
+            if (isGreen)
+            {
+                AddAttribute(3, numGreens);
+            }
+            if (isRed)
+            {
+                AddAttribute(4, numReds);
+            }
 
             //get the columns that we had a collapse
             var columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
@@ -586,6 +662,37 @@ public class ShapesManager : MonoBehaviour
                 p1Health = 100;                
                 healthBar1.size = p1Health / 100f;
                 hp1.text = "HP = " + p1Health.ToString();
+            }
+        }
+    }
+
+    public void AddAttribute(int type, int amount)
+    {
+        if (turn == 1)
+        {
+            p1Attr[type] += amount;
+            attrBars[type].size = p1Attr[type] / 20f;
+            attrTexts[type].text = p1Attr[type].ToString();
+
+            if (p1Attr[type] >= 20)
+            {
+                p1Attr[type] = 20;
+                attrBars[type].size = 20;
+                attrTexts[type].text = "20";
+            }
+        }
+        else if (turn == 2)
+        {
+           //+5s are there to make sure we change the bars and texts for player 2
+            p2Attr[type] += amount;
+            attrBars[type + 5].size = p2Attr[type] / 20f;
+            attrTexts[type + 5].text = p2Attr[type].ToString();
+
+            if (p2Attr[type] >= 20)
+            {
+                p2Attr[type] = 20;
+                attrBars[type + 5].size = 20;
+                attrTexts[type + 5].text = "20";
             }
         }
     }
