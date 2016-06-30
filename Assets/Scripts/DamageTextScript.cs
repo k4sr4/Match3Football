@@ -3,8 +3,6 @@ using UnityEngine.UI;
 using System.Collections;
 
 public class DamageTextScript : MonoBehaviour {
-
-    public GameObject canvas;
     public float minX = 0f;
     public float maxX = 0f;
     public float minY = 7f;

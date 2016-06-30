@@ -54,6 +54,8 @@ public class ShapesManager : MonoBehaviour
     private int[] p2Attr = {0, 0, 0, 0, 0};
     public Scrollbar[] attrBars;
     public Text[] attrTexts;
+    public Text attributeGainText;
+    public int attributeGain;
 
     public bool timedTurns = false;
     public bool AI = false;
@@ -668,11 +670,16 @@ public class ShapesManager : MonoBehaviour
 
     public void AddAttribute(int type, int amount)
     {
+        attributeGain = amount;
+
         if (turn == 1)
         {
             p1Attr[type] += amount;
             attrBars[type].size = p1Attr[type] / 20f;
             attrTexts[type].text = p1Attr[type].ToString();
+            Debug.Log(attrTexts[type].transform.position.x);
+            Debug.Log(attrTexts[type].transform.position.x - 370);
+            Instantiate(attributeGainText, new Vector3(attrBars[type].transform.position.x - 134f, -245f, 0f), Quaternion.identity);
 
             if (p1Attr[type] >= 20)
             {
@@ -687,6 +694,7 @@ public class ShapesManager : MonoBehaviour
             p2Attr[type] += amount;
             attrBars[type + 5].size = p2Attr[type] / 20f;
             attrTexts[type + 5].text = p2Attr[type].ToString();
+            Instantiate(attributeGainText, new Vector3(attrBars[type + 5].transform.position.x - 761f, -245f, 0f), Quaternion.identity);
 
             if (p2Attr[type] >= 20)
             {
@@ -705,5 +713,10 @@ public class ShapesManager : MonoBehaviour
     public int GetDamageDealt()
     {
         return -damageDealt;
+    }
+
+    public int GetAttributeGain()
+    {
+        return attributeGain;
     }
 }
