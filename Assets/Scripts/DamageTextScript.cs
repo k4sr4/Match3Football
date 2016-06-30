@@ -7,8 +7,8 @@ public class DamageTextScript : MonoBehaviour {
     public GameObject canvas;
     public float minX = 0f;
     public float maxX = 0f;
-    public float minY = -50f;
-    public float maxY = 20f;
+    public float minY = 7f;
+    public float maxY = 43f;
 
     void Awake()
     {
