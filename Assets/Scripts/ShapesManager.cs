@@ -3,6 +3,7 @@ using System.Collections;
 using System.Linq;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 
 public class ShapesManager : MonoBehaviour
@@ -60,6 +61,17 @@ public class ShapesManager : MonoBehaviour
     public bool timedTurns = false;
     public bool AI = false;
 
+    public bool endWithGoals = false;
+    public int goalLimit = 2;
+
+    public bool endWithTime = false;
+    public float timeLimit = 600f;
+    private float timeRemaining;
+    public Text totalTimeText;
+
+    public GameObject endPanel;
+    public Text endMsg;
+
     /*void Awake()
     {
         DebugText.enabled = ShowDebugInfo;
@@ -94,6 +106,9 @@ public class ShapesManager : MonoBehaviour
     public void InitializeCandyAndSpawnPositions()
     {
         //InitializeVariables();
+
+        timeRemaining = timeLimit;
+        endPanel.SetActive(false);
 
         if (shapes != null)
             DestroyAllCandy();
@@ -235,6 +250,38 @@ public class ShapesManager : MonoBehaviour
             {
                 ChangeTurn();
                 turnTime = 10f;
+            }
+        }
+
+        //handles the total time when time is the end condition
+        if (endWithTime)
+        {
+            if (timeRemaining > 0)
+            {
+                minutes = (timeRemaining / 60) - 1;
+                seconds = timeRemaining % 60;
+
+                totalTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
+
+                timeRemaining -= Time.deltaTime;
+            }
+            else
+            {
+                if (goals1 > goals2)
+                {
+                    endPanel.SetActive(true);
+                    endMsg.text = "Player 1 Wins!";
+                }
+                else if (goals1 < goals2)
+                {
+                    endPanel.SetActive(true);
+                    endMsg.text = "Player 2 Wins!";
+                }
+                else
+                {
+                    endPanel.SetActive(true);
+                    endMsg.text = "It's a Draw!";
+                }
             }
         }
     }
@@ -641,11 +688,17 @@ public class ShapesManager : MonoBehaviour
             //When player 1 scores a goal
             if (p2Health <= 0)
             {
-                goals1 += 1;
+                goals1 += 1;               
                 goals1Text.text = goals1.ToString();
                 p2Health = 100;
                 healthBar2.size = p2Health / 100f;
                 hp2.text = "HP = " + p2Health.ToString();
+
+                if (goals1 == goalLimit)
+                {
+                    endPanel.SetActive(true);
+                    endMsg.text = "Player 1 Wins!";
+                }
             }
         }
         else if (turn == 2)
@@ -664,6 +717,12 @@ public class ShapesManager : MonoBehaviour
                 p1Health = 100;                
                 healthBar1.size = p1Health / 100f;
                 hp1.text = "HP = " + p1Health.ToString();
+
+                if (goals2 == goalLimit)
+                {
+                    endPanel.SetActive(true);
+                    endMsg.text = "Player 2 Wins!";
+                }
             }
         }
     }
@@ -718,5 +777,10 @@ public class ShapesManager : MonoBehaviour
     public int GetAttributeGain()
     {
         return attributeGain;
+    }
+
+    public void Restart()
+    {
+        SceneManager.LoadScene(0);
     }
 }
