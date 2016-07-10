@@ -682,7 +682,7 @@ public class ShapesManager : MonoBehaviour
             damageDealt = damageAmount * damageMultiplier;
             p2Health -= damageDealt;
             healthBar2.size = p2Health / 100f;
-            hp2.text = "HP = " + p2Health.ToString();
+            hp2.text = p2Health.ToString();
             Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); //damage text
 
             //When player 1 scores a goal
@@ -692,7 +692,7 @@ public class ShapesManager : MonoBehaviour
                 goals1Text.text = goals1.ToString();
                 p2Health = 100;
                 healthBar2.size = p2Health / 100f;
-                hp2.text = "HP = " + p2Health.ToString();
+                hp2.text = p2Health.ToString();
 
                 if (goals1 == goalLimit)
                 {
@@ -738,7 +738,7 @@ public class ShapesManager : MonoBehaviour
             attrTexts[type].text = p1Attr[type].ToString();
             Debug.Log(attrTexts[type].transform.position.x);
             Debug.Log(attrTexts[type].transform.position.x - 370);
-            Instantiate(attributeGainText, new Vector3(attrBars[type].transform.position.x - 134f, -245f, 0f), Quaternion.identity);
+            Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
 
             if (p1Attr[type] >= 20)
             {
@@ -753,7 +753,7 @@ public class ShapesManager : MonoBehaviour
             p2Attr[type] += amount;
             attrBars[type + 5].size = p2Attr[type] / 20f;
             attrTexts[type + 5].text = p2Attr[type].ToString();
-            Instantiate(attributeGainText, new Vector3(attrBars[type + 5].transform.position.x - 761f, -245f, 0f), Quaternion.identity);
+            Instantiate(attributeGainText, new Vector3(attrBars[type + 5].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
 
             if (p2Attr[type] >= 20)
             {
