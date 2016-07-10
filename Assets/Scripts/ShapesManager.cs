@@ -51,12 +51,17 @@ public class ShapesManager : MonoBehaviour
     private int goals1 = 0;
     private int goals2 = 0;
 
-    private int[] p1Attr = {0, 0, 0, 0, 0};
-    private int[] p2Attr = {0, 0, 0, 0, 0};
+    private int[] p1Attr = {0, 0, 0, 0};
+    private int[] p2Attr = {0, 0, 0, 0};
     public Scrollbar[] attrBars;
     public Text[] attrTexts;
     public Text attributeGainText;
     public int attributeGain;
+
+    private int p1Coins = 0;
+    private int p2Coins = 0;
+    public Text coinText;
+    public int coinGain = 0;
 
     public bool timedTurns = false;
     public bool AI = false;
@@ -328,17 +333,17 @@ public class ShapesManager : MonoBehaviour
 
         bool isBall = false;
         bool isGoalie = false;
-        bool isRef = false;
         bool isBlue = false;
         bool isGreen = false;
         bool isRed = false;
+        bool isCoin = false;
 
         int numBalls = 0;
         int numGoalies = 0;
-        int numRefs = 0;
         int numBlues = 0;
         int numGreens = 0;
         int numReds = 0;
+        int numCoins = 0;
 
         shapes.Swap(hitGo, hitGo2);
 
@@ -382,17 +387,17 @@ public class ShapesManager : MonoBehaviour
 
             isBall = false;
             isGoalie = false;
-            isRef = false;
             isBlue = false;
             isGreen = false;
             isRed = false;
+            isCoin = false;
             
             numBalls = 0;
             numGoalies = 0;
-            numRefs = 0;
             numBlues = 0;
             numGreens = 0;
             numReds = 0;
+            numCoins = 0;
 
             soundManager.PlayCrincle();
 
@@ -407,11 +412,6 @@ public class ShapesManager : MonoBehaviour
                 {
                     isGoalie = true;
                     numGoalies++;
-                }
-                else if (item.GetComponent<Shape>().Type == "Ref")
-                {
-                    isRef = true;
-                    numRefs++;
                 }
                 else if (item.GetComponent<Shape>().Type == "player_blue")
                 {
@@ -428,6 +428,11 @@ public class ShapesManager : MonoBehaviour
                     isRed = true;
                     numReds++;
                 }
+                else if (item.GetComponent<Shape>().Type == "Coin")
+                {
+                    isCoin = true;
+                    numCoins++;
+                }
 
                 shapes.Remove(item);
                 RemoveFromScene(item);
@@ -441,21 +446,21 @@ public class ShapesManager : MonoBehaviour
             {
                 AddAttribute(0, numGoalies);
             }
-            if (isRef)
-            {
-                AddAttribute(1, numRefs);
-            }
             if (isBlue)
             {
-                AddAttribute(2, numBlues);
+                AddAttribute(1, numBlues);
             }
             if (isGreen)
             {
-                AddAttribute(3, numGreens);
+                AddAttribute(2, numGreens);
             }
             if (isRed)
             {
-                AddAttribute(4, numReds);
+                AddAttribute(3, numReds);
+            }
+            if (isCoin)
+            {
+                AddCoins (numCoins);
             }
 
             //get the columns that we had a collapse
@@ -706,7 +711,7 @@ public class ShapesManager : MonoBehaviour
             damageDealt = damageAmount * damageMultiplier;
             p1Health -= damageDealt;
             healthBar1.size = p1Health / 100f;
-            hp1.text = "HP = " + p1Health.ToString();
+            hp1.text = p1Health.ToString();
             Instantiate(damageText, new Vector3(0f, 0f, 0f), Quaternion.identity); //damage text
 
             //When player 1 scores a goal
@@ -716,7 +721,7 @@ public class ShapesManager : MonoBehaviour
                 goals2Text.text = goals2.ToString();
                 p1Health = 100;                
                 healthBar1.size = p1Health / 100f;
-                hp1.text = "HP = " + p1Health.ToString();
+                hp1.text = p1Health.ToString();
 
                 if (goals2 == goalLimit)
                 {
@@ -749,18 +754,33 @@ public class ShapesManager : MonoBehaviour
         }
         else if (turn == 2)
         {
-           //+5s are there to make sure we change the bars and texts for player 2
+           //+4s are there to make sure we change the bars and texts for player 2
             p2Attr[type] += amount;
-            attrBars[type + 5].size = p2Attr[type] / 20f;
-            attrTexts[type + 5].text = p2Attr[type].ToString();
-            Instantiate(attributeGainText, new Vector3(attrBars[type + 5].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+            attrBars[type + 4].size = p2Attr[type] / 20f;
+            attrTexts[type + 4].text = p2Attr[type].ToString();
+            Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
 
             if (p2Attr[type] >= 20)
             {
                 p2Attr[type] = 20;
-                attrBars[type + 5].size = 20;
-                attrTexts[type + 5].text = "20";
+                attrBars[type + 4].size = 20;
+                attrTexts[type + 4].text = "20";
             }
+        }
+    }
+
+    public void AddCoins(int amount)
+    {
+        coinGain = amount;
+        Instantiate(coinText, new Vector3(0f, 0f, 0f), Quaternion.identity); //Coin text
+
+        if (turn == 1)
+        {
+            p1Coins += amount;
+        }
+        else if (turn == 2)
+        {
+            p2Coins += amount;
         }
     }
 
@@ -777,6 +797,11 @@ public class ShapesManager : MonoBehaviour
     public int GetAttributeGain()
     {
         return attributeGain;
+    }
+
+    public int GetCoinGain()
+    {
+        return coinGain;
     }
 
     public void Restart()
