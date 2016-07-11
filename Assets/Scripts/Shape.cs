@@ -19,7 +19,7 @@ public class Shape : MonoBehaviour
         if (otherShape == null || !(otherShape is Shape))
             throw new ArgumentException("otherShape");
 
-        return string.Compare(this.Type, (otherShape as Shape).Type) == 0;
+        return (string.Compare(this.Type, (otherShape as Shape).Type) == 0) || (this.Type == "Wild") || ((otherShape as Shape).Type == "Wild");
     }
 
     /// Constructor alternative

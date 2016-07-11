@@ -26,6 +26,8 @@ using System.Text;
         public static readonly float AIWaitTime = 1f;
 
         public static readonly float DamageDelay = 1f;
+
+        public static readonly float ShuffleDelay = 2f;
     }
 
    

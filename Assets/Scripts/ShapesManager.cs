@@ -7,13 +7,8 @@ using UnityEngine.SceneManagement;
 
 
 public class ShapesManager : MonoBehaviour
-{
-    //public Text DebugText, ScoreText;
-    //public bool ShowDebugInfo = false;    
-
+{    
     public ShapesArray shapes;
-
-    //private int score;
 
     public Vector2 BottomRight = new Vector2(-1.37f, -2.27f);
     public readonly Vector2 CandySize = new Vector2(0.7f, 0.7f);
@@ -39,6 +34,7 @@ public class ShapesManager : MonoBehaviour
     float minutes;
     float seconds;
     public Text bonusText;
+    public Text lockedSituationText;
 
     public int p1Health = 100;
     public int p2Health = 100;
@@ -47,6 +43,8 @@ public class ShapesManager : MonoBehaviour
     public int damageDealt;
     public Text damageText;
     public Text hp1, hp2;
+    public Text hpGainText;
+    public int hpGain = 0;
     public Text goals1Text, goals2Text;
     private int goals1 = 0;
     private int goals2 = 0;
@@ -77,11 +75,6 @@ public class ShapesManager : MonoBehaviour
     public GameObject endPanel;
     public Text endMsg;
 
-    /*void Awake()
-    {
-        DebugText.enabled = ShowDebugInfo;
-    }*/
-
     // Use this for initialization
     void Start()
     {
@@ -110,8 +103,6 @@ public class ShapesManager : MonoBehaviour
 
     public void InitializeCandyAndSpawnPositions()
     {
-        //InitializeVariables();
-
         timeRemaining = timeLimit;
         endPanel.SetActive(false);
 
@@ -190,9 +181,6 @@ public class ShapesManager : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        /*if (ShowDebugInfo)
-            DebugText.text = DebugUtilities.GetArrayContents(shapes);*/
-
         if (state == GameState.None)
         {
             //user has clicked or touched
@@ -332,18 +320,20 @@ public class ShapesManager : MonoBehaviour
         bool addBonus = false;
 
         bool isBall = false;
-        bool isGoalie = false;
+        bool isRef = false;
         bool isBlue = false;
         bool isGreen = false;
         bool isRed = false;
         bool isCoin = false;
+        bool isGoalie = false;
 
         int numBalls = 0;
-        int numGoalies = 0;
+        int numRefs = 0;
         int numBlues = 0;
         int numGreens = 0;
         int numReds = 0;
         int numCoins = 0;
+        int numGoalies = 0;
 
         shapes.Swap(hitGo, hitGo2);
 
@@ -373,31 +363,27 @@ public class ShapesManager : MonoBehaviour
         if ((hitGomatchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus || hitGo2matchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus) && !timedTurns)
         {
             addBonus = true;
-            StartCoroutine(DisplayBonusText());
+            StartCoroutine(DisplayText(bonusText));
         }
 
         int timesRun = 1; //can be used for subsequent matching bonus point
         while (totalMatches.Count() >= Constants.MinimumMatches)
         {
-            //increase score
-            /*IncreaseScore((totalMatches.Count() - 2) * Constants.Match3Score);
-
-            if (timesRun >= 2)
-                IncreaseScore(Constants.SubsequentMatchScore);*/
-
             isBall = false;
-            isGoalie = false;
+            isRef = false;
             isBlue = false;
             isGreen = false;
             isRed = false;
             isCoin = false;
+            isGoalie = false;
             
             numBalls = 0;
-            numGoalies = 0;
+            numRefs = 0;
             numBlues = 0;
             numGreens = 0;
             numReds = 0;
             numCoins = 0;
+            numGoalies = 0;
 
             soundManager.PlayCrincle();
 
@@ -408,10 +394,10 @@ public class ShapesManager : MonoBehaviour
                     isBall = true;
                     numBalls++;
                 }
-                else if (item.GetComponent<Shape>().Type == "Goalie")
+                else if (item.GetComponent<Shape>().Type == "Ref")
                 {
-                    isGoalie = true;
-                    numGoalies++;
+                    isRef = true;
+                    numRefs++;
                 }
                 else if (item.GetComponent<Shape>().Type == "player_blue")
                 {
@@ -433,6 +419,11 @@ public class ShapesManager : MonoBehaviour
                     isCoin = true;
                     numCoins++;
                 }
+                else if (item.GetComponent<Shape>().Type == "Goalie")
+                {
+                    isGoalie = true;
+                    numGoalies++;
+                }
 
                 shapes.Remove(item);
                 RemoveFromScene(item);
@@ -442,9 +433,9 @@ public class ShapesManager : MonoBehaviour
             {
                 DealDamage(numBalls);
             }
-            if (isGoalie)
+            if (isRef)
             {
-                AddAttribute(0, numGoalies);
+                AddAttribute(0, numRefs);
             }
             if (isBlue)
             {
@@ -461,6 +452,10 @@ public class ShapesManager : MonoBehaviour
             if (isCoin)
             {
                 AddCoins (numCoins);
+            }
+            if (isGoalie)
+            {
+                RegainHp(numGoalies);
             }
 
             //get the columns that we had a collapse
@@ -544,25 +539,22 @@ public class ShapesManager : MonoBehaviour
     /// Get a random candy
     private GameObject GetRandomCandy()
     {
-        return CandyPrefabs[Random.Range(0, CandyPrefabs.Length)];
+        int randomChoice = Random.Range(0, CandyPrefabs.Length);
+        if (randomChoice == 0)
+        {
+            //Make ball rare
+            if (Random.Range(0, 2) == 0)
+            {
+                return CandyPrefabs[0];
+            }
+            else
+            {
+                return GetRandomCandy();
+            }
+        }
+        
+        return CandyPrefabs[randomChoice];
     }
-
-    /*private void InitializeVariables()
-    {
-        score = 0;
-        ShowScore();
-    }
-
-    private void IncreaseScore(int amount)
-    {
-        score += amount;
-        ShowScore();
-    }
-
-    private void ShowScore()
-    {
-        ScoreText.text = "Score: " + score.ToString();
-    }*/
 
     /// Get a random explosion
     private GameObject GetRandomExplosion()
@@ -617,15 +609,26 @@ public class ShapesManager : MonoBehaviour
         potentialMatches = Utilities.GetPotentialMatches(shapes);
         List<GameObject> animateItems = new List<GameObject>();
 
-        foreach (var item in potentialMatches)
+        if (potentialMatches == null)
         {
-            animateItems.Add(item);
-        }
-        animateItems.RemoveAt(animateItems.Count - 1);
+            Debug.Log("Locked Situation");
 
-        if (potentialMatches != null)
+            StartCoroutine(DisplayText(lockedSituationText));
+            //Restart the board
+            InitializeTypesOnPrefabShapes();
+            
+            InitializeCandyAndSpawnPositions();
+
+            StartCheckForPotentialMatches();
+        }
+        else
         {
-         
+            foreach (var item in potentialMatches)
+            {
+                animateItems.Add(item);
+            }
+            animateItems.RemoveAt(animateItems.Count - 1);
+
             if (AI && turn == 2)   {
                 AIMatchPotential(potentialMatches);
             }
@@ -644,16 +647,6 @@ public class ShapesManager : MonoBehaviour
                 }
             }
         }
-        else
-        {
-            Debug.Log("Locked Situation");
-            //Restart the board
-            InitializeTypesOnPrefabShapes();
-
-            InitializeCandyAndSpawnPositions();
-
-            StartCheckForPotentialMatches();
-        }
     }
 
     private void AIMatchPotential(IEnumerable<GameObject> potentialMatches)
@@ -671,13 +664,13 @@ public class ShapesManager : MonoBehaviour
         StartCoroutine(FindMatchesAndCollapse(hitGo2));
     }
 
-    private IEnumerator DisplayBonusText()
+    private IEnumerator DisplayText(Text toDisplay)
     {
-        bonusText.enabled = true;
+        toDisplay.enabled = true;
 
         yield return new WaitForSeconds(2.0f);
 
-        bonusText.enabled = false;
+        toDisplay.enabled = false;
     }
 
     private void DealDamage(int damageAmount)
@@ -741,8 +734,6 @@ public class ShapesManager : MonoBehaviour
             p1Attr[type] += amount;
             attrBars[type].size = p1Attr[type] / 20f;
             attrTexts[type].text = p1Attr[type].ToString();
-            Debug.Log(attrTexts[type].transform.position.x);
-            Debug.Log(attrTexts[type].transform.position.x - 370);
             Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
 
             if (p1Attr[type] >= 20)
@@ -781,6 +772,25 @@ public class ShapesManager : MonoBehaviour
         else if (turn == 2)
         {
             p2Coins += amount;
+        }
+    }
+
+    public void RegainHp(int amount)
+    {
+        hpGain = amount;
+        Instantiate(hpGainText, new Vector3(0f, 0f, 0f), Quaternion.identity); //hp regain text
+
+        if (turn == 1)
+        {
+            p1Health += amount;
+            healthBar1.size = p1Health / 100f;
+            hp1.text = p1Health.ToString();
+        }
+        else if (turn == 2)
+        {
+            p2Health += amount;
+            healthBar2.size = p2Health / 100f;
+            hp2.text = p2Health.ToString();
         }
     }
 
