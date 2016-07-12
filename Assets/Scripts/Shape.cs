@@ -11,6 +11,8 @@ public class Shape : MonoBehaviour
 
     public string Type { get; set; }
 
+    public float chance = 1;
+
     public Shape() { }
 
     /// Checks if the current shape is of the same type as the parameter

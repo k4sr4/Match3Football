@@ -540,20 +540,18 @@ public class ShapesManager : MonoBehaviour
     private GameObject GetRandomCandy()
     {
         int randomChoice = Random.Range(0, CandyPrefabs.Length);
-        if (randomChoice == 0)
+
+        float generateChance = CandyPrefabs[randomChoice].GetComponent<Shape>().chance;        
+
+        //Handle rarity
+        if (Random.value <= generateChance)
         {
-            //Make ball rare
-            if (Random.Range(0, 2) == 0)
-            {
-                return CandyPrefabs[0];
-            }
-            else
-            {
-                return GetRandomCandy();
-            }
+            return CandyPrefabs[randomChoice];
         }
-        
-        return CandyPrefabs[randomChoice];
+        else
+        {
+            return GetRandomCandy();
+        }                     
     }
 
     /// Get a random explosion
