@@ -118,6 +118,21 @@ public class ShapesArray
         return matches;
     }
 
+    public IEnumerable<GameObject> GetBlockInEntireBoard(GameObject go)
+    {
+        List<GameObject> matches = new List<GameObject>();
+
+        for (int row = 0; row < Constants.Rows; row++)
+        {
+            for (int column = 0; column < Constants.Columns; column++)
+            {
+                if (shapes[row, column].GetComponent<Shape>().Type == go.GetComponent<Shape>().Type)
+                    matches.Add(shapes[row, column]);
+            }
+        }
+        return matches;
+    }
+
     /// Searches horizontally for matches
     private IEnumerable<GameObject> GetMatchesHorizontally(GameObject go)
     {
@@ -186,7 +201,6 @@ public class ShapesArray
                 else
                     break;
             }
-
 
         if (matches.Count < Constants.MinimumMatches)
             matches.Clear();

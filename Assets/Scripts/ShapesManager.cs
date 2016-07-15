@@ -37,8 +37,7 @@ public class ShapesManager : MonoBehaviour
     public Text lockedSituationText;
 
     public int p1Health = 100;
-    public int p2Health = 100;
-    public int damageMultiplier = 5;
+    public int p2Health = 100;    
     public Scrollbar healthBar1, healthBar2;
     public int damageDealt;
     public Text damageText;
@@ -46,8 +45,8 @@ public class ShapesManager : MonoBehaviour
     public Text hpGainText;
     public int hpGain = 0;
     public Text goals1Text, goals2Text;
-    private int goals1 = 0;
-    private int goals2 = 0;
+    public int goals1 = 0;
+    public int goals2 = 0;
 
     private int[] p1Attr = {0, 0, 0, 0};
     private int[] p2Attr = {0, 0, 0, 0};
@@ -60,6 +59,8 @@ public class ShapesManager : MonoBehaviour
     private int p2Coins = 0;
     public Text coinText;
     public int coinGain = 0;
+
+    public int collectBlockAbilityBlocks = 0;
 
     public bool timedTurns = false;
     public bool AI = false;
@@ -279,7 +280,7 @@ public class ShapesManager : MonoBehaviour
         }
     }
 
-    private void ChangeTurn()
+    public void ChangeTurn()
     {
         if (turn == 1)
         {
@@ -435,19 +436,19 @@ public class ShapesManager : MonoBehaviour
             }
             if (isRef)
             {
-                AddAttribute(0, numRefs);
+                AddAttribute(0, numRefs, false);
             }
             if (isBlue)
             {
-                AddAttribute(1, numBlues);
+                AddAttribute(1, numBlues, false);
             }
             if (isGreen)
             {
-                AddAttribute(2, numGreens);
+                AddAttribute(2, numGreens, false);
             }
             if (isRed)
             {
-                AddAttribute(3, numReds);
+                AddAttribute(3, numReds, false);
             }
             if (isCoin)
             {
@@ -461,7 +462,6 @@ public class ShapesManager : MonoBehaviour
             //get the columns that we had a collapse
             var columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
 
-            //the order the 2 methods below get called is important!!!
             //collapse the ones gone
             var collapsedCandyInfo = shapes.Collapse(columns);
             //create new ones
@@ -490,6 +490,37 @@ public class ShapesManager : MonoBehaviour
         StartCheckForPotentialMatches();
     }
 
+    public IEnumerator ClearBlock(GameObject hitGo)
+    {        
+        var sameBlocks = shapes.GetBlockInEntireBoard(hitGo);
+
+        foreach (var item in sameBlocks)
+        {
+            collectBlockAbilityBlocks++;
+            shapes.Remove(item);
+            RemoveFromScene(item);
+        }
+
+        //get the columns that we had a collapse
+        var columns = sameBlocks.Select(go => go.GetComponent<Shape>().Column).Distinct();
+
+        //collapse the ones gone
+        var collapsedCandyInfo = shapes.Collapse(columns);
+        //create new ones
+        var newCandyInfo = CreateNewCandyInSpecificColumns(columns);
+
+        int maxDistance = Mathf.Max(collapsedCandyInfo.MaxDistance, newCandyInfo.MaxDistance);
+
+        MoveAndAnimate(newCandyInfo.AlteredCandy, maxDistance);
+        MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
+
+        //will wait for both of the above animations
+        yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
+
+        //search if there are matches with the new/collapsed items
+
+        StartCheckForPotentialMatches();
+    }
     /// Spawns new candy in columns that have missing ones
     private AlteredCandyInfo CreateNewCandyInSpecificColumns(IEnumerable<int> columnsWithMissingCandy)
     {
@@ -671,11 +702,11 @@ public class ShapesManager : MonoBehaviour
         toDisplay.enabled = false;
     }
 
-    private void DealDamage(int damageAmount)
+    public void DealDamage(int damageAmount)
     {
         if (turn == 1)
         {
-            damageDealt = damageAmount * damageMultiplier;
+            damageDealt = damageAmount * Constants.damageMultiplier;
             p2Health -= damageDealt;
             healthBar2.size = p2Health / 100f;
             hp2.text = p2Health.ToString();
@@ -684,22 +715,12 @@ public class ShapesManager : MonoBehaviour
             //When player 1 scores a goal
             if (p2Health <= 0)
             {
-                goals1 += 1;               
-                goals1Text.text = goals1.ToString();
-                p2Health = 100;
-                healthBar2.size = p2Health / 100f;
-                hp2.text = p2Health.ToString();
-
-                if (goals1 == goalLimit)
-                {
-                    endPanel.SetActive(true);
-                    endMsg.text = "Player 1 Wins!";
-                }
+                ScoreGoal();
             }
         }
         else if (turn == 2)
         {
-            damageDealt = damageAmount * damageMultiplier;
+            damageDealt = damageAmount * Constants.damageMultiplier;
             p1Health -= damageDealt;
             healthBar1.size = p1Health / 100f;
             hp1.text = p1Health.ToString();
@@ -708,52 +729,109 @@ public class ShapesManager : MonoBehaviour
             //When player 1 scores a goal
             if (p1Health <= 0)
             {
-                goals2 += 1;
-                goals2Text.text = goals2.ToString();
-                p1Health = 100;                
-                healthBar1.size = p1Health / 100f;
-                hp1.text = p1Health.ToString();
-
-                if (goals2 == goalLimit)
-                {
-                    endPanel.SetActive(true);
-                    endMsg.text = "Player 2 Wins!";
-                }
+                ScoreGoal();
             }
         }
     }
 
-    public void AddAttribute(int type, int amount)
+    public void ScoreGoal()
     {
-        attributeGain = amount;
-
         if (turn == 1)
         {
-            p1Attr[type] += amount;
-            attrBars[type].size = p1Attr[type] / 20f;
-            attrTexts[type].text = p1Attr[type].ToString();
-            Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+            goals1 += 1;
+            goals1Text.text = goals1.ToString();
+            p2Health = 100;
+            healthBar2.size = p2Health / 100f;
+            hp2.text = p2Health.ToString();
 
-            if (p1Attr[type] >= 20)
+            if (goals1 == goalLimit)
             {
-                p1Attr[type] = 20;
-                attrBars[type].size = 20;
-                attrTexts[type].text = "20";
+                endPanel.SetActive(true);
+                endMsg.text = "Player 1 Wins!";
             }
         }
         else if (turn == 2)
         {
-           //+4s are there to make sure we change the bars and texts for player 2
-            p2Attr[type] += amount;
-            attrBars[type + 4].size = p2Attr[type] / 20f;
-            attrTexts[type + 4].text = p2Attr[type].ToString();
-            Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+            goals2 += 1;
+            goals2Text.text = goals2.ToString();
+            p1Health = 100;
+            healthBar1.size = p1Health / 100f;
+            hp1.text = p1Health.ToString();
 
-            if (p2Attr[type] >= 20)
+            if (goals2 == goalLimit)
             {
-                p2Attr[type] = 20;
-                attrBars[type + 4].size = 20;
-                attrTexts[type + 4].text = "20";
+                endPanel.SetActive(true);
+                endMsg.text = "Player 2 Wins!";
+            }
+        }
+    }
+
+    public void AddAttribute(int type, int amount, bool drain)
+    {
+        attributeGain = amount;
+
+        if (drain)
+        {
+            if (turn == 1)
+            {
+                //+4s are there to make sure we change the bars and texts for player 2
+                p2Attr[type] -= amount;
+                attrBars[type + 4].size = p2Attr[type] / 20f;
+                attrTexts[type + 4].text = p2Attr[type].ToString();
+                //Instantiate(attributeGainText, new Vector3(attrBars[type + 6].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+
+                if (p2Attr[type] <= 0)
+                {
+                    p2Attr[type] = 0;
+                    attrBars[type + 4].size = 0;
+                    attrTexts[type + 4].text = "0";
+                }
+            }
+            else if (turn == 2)
+            {                
+                p1Attr[type] -= amount;
+                attrBars[type].size = p1Attr[type] / 20f;
+                attrTexts[type].text = p1Attr[type].ToString();
+                //Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+
+                if (p1Attr[type] <= 0)
+                {
+                    p1Attr[type] = 0;
+                    attrBars[type].size = 0;
+                    attrTexts[type].text = "0";
+                }
+            }
+        }
+        else
+        {
+            if (turn == 1)
+            {
+                p1Attr[type] += amount;
+                attrBars[type].size = p1Attr[type] / 20f;
+                attrTexts[type].text = p1Attr[type].ToString();
+                Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+
+                if (p1Attr[type] >= 20)
+                {
+                    p1Attr[type] = 20;
+                    attrBars[type].size = 20;
+                    attrTexts[type].text = "20";
+                }
+            }
+            else if (turn == 2)
+            {
+                //+4s are there to make sure we change the bars and texts for player 2
+                p2Attr[type] += amount;
+                attrBars[type + 4].size = p2Attr[type] / 20f;
+                attrTexts[type + 4].text = p2Attr[type].ToString();
+                Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+
+                if (p2Attr[type] >= 20)
+                {
+                    p2Attr[type] = 20;
+                    attrBars[type + 4].size = 20;
+                    attrTexts[type + 4].text = "20";
+                }
             }
         }
     }
