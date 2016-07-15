@@ -48,8 +48,8 @@ public class ShapesManager : MonoBehaviour
     public int goals1 = 0;
     public int goals2 = 0;
 
-    private int[] p1Attr = {0, 0, 0, 0};
-    private int[] p2Attr = {0, 0, 0, 0};
+    public int[] p1Attr = {0, 0, 0, 0};
+    public int[] p2Attr = {0, 0, 0, 0};
     public Scrollbar[] attrBars;
     public Text[] attrTexts;
     public Text attributeGainText;
@@ -491,7 +491,24 @@ public class ShapesManager : MonoBehaviour
     }
 
     public IEnumerator ClearBlock(GameObject hitGo)
-    {        
+    {
+        bool isBall = false;
+        bool isRef = false;
+        bool isBlue = false;
+        bool isGreen = false;
+        bool isRed = false;
+        bool isCoin = false;
+        bool isGoalie = false;
+
+        int numBalls = 0;
+        int numRefs = 0;
+        int numBlues = 0;
+        int numGreens = 0;
+        int numReds = 0;
+        int numCoins = 0;
+        int numGoalies = 0;
+
+        IEnumerable<GameObject> totalMatches;
         var sameBlocks = shapes.GetBlockInEntireBoard(hitGo);
 
         foreach (var item in sameBlocks)
@@ -518,6 +535,120 @@ public class ShapesManager : MonoBehaviour
         yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
 
         //search if there are matches with the new/collapsed items
+        totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
+            Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+
+        while (totalMatches.Count() >= Constants.MinimumMatches)
+        {
+            isBall = false;
+            isRef = false;
+            isBlue = false;
+            isGreen = false;
+            isRed = false;
+            isCoin = false;
+            isGoalie = false;
+
+            numBalls = 0;
+            numRefs = 0;
+            numBlues = 0;
+            numGreens = 0;
+            numReds = 0;
+            numCoins = 0;
+            numGoalies = 0;
+
+            soundManager.PlayCrincle();
+
+            foreach (var item in totalMatches)
+            {
+                if (item.GetComponent<Shape>().Type == "Ball")
+                {
+                    isBall = true;
+                    numBalls++;
+                }
+                else if (item.GetComponent<Shape>().Type == "Ref")
+                {
+                    isRef = true;
+                    numRefs++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_blue")
+                {
+                    isBlue = true;
+                    numBlues++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_green")
+                {
+                    isGreen = true;
+                    numGreens++;
+                }
+                else if (item.GetComponent<Shape>().Type == "player_red")
+                {
+                    isRed = true;
+                    numReds++;
+                }
+                else if (item.GetComponent<Shape>().Type == "Coin")
+                {
+                    isCoin = true;
+                    numCoins++;
+                }
+                else if (item.GetComponent<Shape>().Type == "Goalie")
+                {
+                    isGoalie = true;
+                    numGoalies++;
+                }
+
+                shapes.Remove(item);
+                RemoveFromScene(item);
+            }
+
+            if (isBall)
+            {
+                DealDamage(numBalls);
+            }
+            if (isRef)
+            {
+                AddAttribute(0, numRefs, false);
+            }
+            if (isBlue)
+            {
+                AddAttribute(1, numBlues, false);
+            }
+            if (isGreen)
+            {
+                AddAttribute(2, numGreens, false);
+            }
+            if (isRed)
+            {
+                AddAttribute(3, numReds, false);
+            }
+            if (isCoin)
+            {
+                AddCoins(numCoins);
+            }
+            if (isGoalie)
+            {
+                RegainHp(numGoalies);
+            }
+
+            //get the columns that we had a collapse
+            columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
+
+            //collapse the ones gone
+            collapsedCandyInfo = shapes.Collapse(columns);
+            //create new ones
+            newCandyInfo = CreateNewCandyInSpecificColumns(columns);
+
+            maxDistance = Mathf.Max(collapsedCandyInfo.MaxDistance, newCandyInfo.MaxDistance);
+
+            MoveAndAnimate(newCandyInfo.AlteredCandy, maxDistance);
+            MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
+
+            //will wait for both of the above animations
+            yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
+
+            //search if there are matches with the new/collapsed items
+            totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
+                Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+        }
 
         StartCheckForPotentialMatches();
     }
@@ -835,6 +966,66 @@ public class ShapesManager : MonoBehaviour
             }
         }
     }
+
+    /*public void DisplayAttrDrain(int index)
+    {
+        if (turn == 1)
+        {
+            attrBars[index].size = p1Attr[index] / 20f;
+            attrTexts[index].text = p1Attr[index].ToString();
+            //Instantiate(attributeGainText, new Vector3(attrBars[index].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+
+            if (p1Attr[index] <= 0)
+            {
+                p1Attr[index] = 0;
+                attrBars[index].size = 0;
+                attrTexts[index].text = "0";
+            }
+        }
+        else if (turn == 2)
+        {
+            attrBars[index + 4].size = p2Attr[index] / 20f;
+            attrTexts[index + 4].text = p2Attr[index].ToString();
+            //Instantiate(attributeGainText, new Vector3(attrBars[index + 6].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+
+            if (p2Attr[index] <= 0)
+            {
+                p2Attr[index] = 0;
+                attrBars[index + 4].size = 0;
+                attrTexts[index + 4].text = "0";
+            }
+        }
+    }
+
+    public void DisplayAttrGain(int index)
+    {
+        if (turn == 1)
+        {
+            attrBars[index].size = p1Attr[index] / 20f;
+            attrTexts[index].text = p1Attr[index].ToString();
+            Instantiate(attributeGainText, new Vector3(attrBars[index].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+
+            if (p1Attr[index] >= 20)
+            {
+                p1Attr[index] = 20;
+                attrBars[index].size = 20;
+                attrTexts[index].text = "20";
+            }
+        }
+        else if (turn == 2)
+        {
+            attrBars[index + 4].size = p2Attr[index] / 20f;
+            attrTexts[index + 4].text = p2Attr[index].ToString();
+            Instantiate(attributeGainText, new Vector3(attrBars[index + 4].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+
+            if (p2Attr[index] >= 20)
+            {
+                p2Attr[index] = 20;
+                attrBars[index + 4].size = 20;
+                attrTexts[index + 4].text = "20";
+            }
+        }
+    }*/
 
     public void AddCoins(int amount)
     {

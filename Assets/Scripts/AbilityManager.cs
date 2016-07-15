@@ -8,6 +8,8 @@ public class AbilityManager : MonoBehaviour {
     public GameObject[] abilities;
     public Text abilityText;
 
+    private bool enableAbilities = true;
+
 	// Use this for initialization
 	void Start () {
 	
@@ -15,12 +17,14 @@ public class AbilityManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        if (Input.inputString != "")
-        {            
+        if (Input.inputString != "" && enableAbilities)
+        {
+            enableAbilities = false;
             int choice = Int32.Parse(Input.inputString);
             abilityText.text = abilities[choice - 1].GetComponent<Ability>().message;
             StartCoroutine(DisplayText());
             abilities[choice - 1].GetComponent<Ability>().Execute();
+            StartCoroutine(WaitBeforeChangeTurn());
         }
 	}
 
@@ -31,5 +35,12 @@ public class AbilityManager : MonoBehaviour {
         yield return new WaitForSeconds(1.5f);
 
         abilityText.enabled = false;
+    }
+
+    IEnumerator WaitBeforeChangeTurn()
+    {        
+        yield return new WaitForSeconds(1f);
+        GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();
+        enableAbilities = true;
     }
 }

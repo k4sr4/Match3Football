@@ -25,9 +25,12 @@ public static class Utilities
         {
             foreach (var item in potentialMatches)
             {
-                Color c = item.GetComponent<SpriteRenderer>().color;
-                c.a = i;
-                item.GetComponent<SpriteRenderer>().color = c;
+                if (item != null)
+                {
+                    Color c = item.GetComponent<SpriteRenderer>().color;
+                    c.a = i;
+                    item.GetComponent<SpriteRenderer>().color = c;
+                }
             }
             yield return new WaitForSeconds(Constants.OpacityAnimationFrameDelay);
         }

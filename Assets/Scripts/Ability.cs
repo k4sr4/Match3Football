@@ -27,52 +27,69 @@ public class Ability : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-	
+	    
 	}
 
     public void Execute()
     {
-        shapeManager = FindObjectOfType<ShapesManager>();        
-
-        //Deal damage and score goal if any (apply chance)
-        if (Random.value <= chance)
-        {
-            if (damage != 0)
-                shapeManager.DealDamage(damage / Constants.damageMultiplier);
-
-            if (goal)
-                shapeManager.ScoreGoal();
-        }
-
-        //Add to attribute
-        if (addAttribute)
-        {
-            StartCoroutine(shapeManager.ClearBlock(toClear));
-            int attrAmount = shapeManager.collectBlockAbilityBlocks;
-            shapeManager.AddAttribute(toClearIndex, attrAmount, false);
-            shapeManager.collectBlockAbilityBlocks = 0;
-        }
-
-        //Drain from opponent's attribute
-        if (affectOppenentsAttribute)
-        {
-            shapeManager.AddAttribute(opponentAttr, drainAmount, true);
-        }
-
+        shapeManager = FindObjectOfType<ShapesManager>();
         int turn = shapeManager.GetTurn();
-        if (turn == 1)
-        {    
+        bool enoughResources = true;
 
+        if (turn == 1)
+        {
+            for (int i = 0; i < resources.Length; i++)
+            {
+                if (resources[i] > shapeManager.p1Attr[i])
+                    enoughResources = false;
+            }
         }
         else if (turn == 2)
         {
+            for (int i = 0; i < resources.Length; i++)
+            {
+                if (resources[i] > shapeManager.p2Attr[i])
+                    enoughResources = false;
+            }
+        }        
 
-        }
-
-        //Change turn
-        if (consumesTurn)
+        if (enoughResources)
         {
-            shapeManager.ChangeTurn();
+            //Reduce attributes going towards resources
+            for (int i = 0; i < resources.Length; i++)
+            {                
+                if (resources[i] != 0)
+                    shapeManager.AddAttribute(i, -resources[i], false);
+            }   
+
+            //Deal damage and score goal if any (apply chance)
+            if (Random.value <= chance)
+            {
+                if (damage != 0)
+                    shapeManager.DealDamage(damage / Constants.damageMultiplier);
+
+                if (goal)
+                    shapeManager.ScoreGoal();
+            }
+
+            //Add to attribute
+            if (addAttribute)
+            {
+                StartCoroutine(shapeManager.ClearBlock(toClear));
+                int attrAmount = shapeManager.collectBlockAbilityBlocks;
+                if (attrAmount > 0)
+                {
+                    shapeManager.AddAttribute(toClearIndex, attrAmount, false);
+                    shapeManager.collectBlockAbilityBlocks = 0;
+                }
+            }
+
+            //Drain from opponent's attribute
+            if (affectOppenentsAttribute)
+            {
+                shapeManager.AddAttribute(opponentAttr, drainAmount, true);
+            }
+                    
         }
-    }
+    }    
 }
