@@ -16,6 +16,9 @@ public class Ability : MonoBehaviour {
     public int[] resources = { 0, 0, 0, 0 };
     public int damage = 0;
     public bool goal = false;
+    public bool lockAbilities = false;
+    public bool convertBlocks = false;
+    public GameObject originalBlock, toConvertBlock;
 
     private ShapesManager shapeManager;
 
@@ -43,6 +46,12 @@ public class Ability : MonoBehaviour {
                 if (resources[i] > shapeManager.p1Attr[i])
                     enoughResources = false;
             }
+
+            //Lock other player's abilities for 1 turn
+            if (lockAbilities)
+            {
+                FindObjectOfType<AbilityManager>().p2Lock = true;
+            }
         }
         else if (turn == 2)
         {
@@ -50,6 +59,11 @@ public class Ability : MonoBehaviour {
             {
                 if (resources[i] > shapeManager.p2Attr[i])
                     enoughResources = false;
+            }
+
+            if (lockAbilities)
+            {
+                FindObjectOfType<AbilityManager>().p1Lock = true;
             }
         }        
 
@@ -88,6 +102,12 @@ public class Ability : MonoBehaviour {
             if (affectOppenentsAttribute)
             {
                 shapeManager.AddAttribute(opponentAttr, drainAmount, true);
+            }
+
+            //Convert one block to another
+            if (convertBlocks)
+            {
+                StartCoroutine(shapeManager.ConvertBlock(originalBlock, toConvertBlock));
             }
                     
         }

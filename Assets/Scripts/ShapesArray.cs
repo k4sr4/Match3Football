@@ -55,7 +55,7 @@ public class ShapesArray
         //swap their respective properties
         Shape.SwapColumnRow(g1Shape, g2Shape);
 
-    }
+    }    
 
     /// Undoes the swap
     public void UndoSwap()
@@ -94,6 +94,18 @@ public class ShapesArray
         matchesInfo.AddObjectRange(verticalMatches);
 
         return matchesInfo;
+    }
+
+    //Replace two items
+    public void Replace(GameObject g1, GameObject g2)
+    {
+        var g1Shape = g1.GetComponent<Shape>();
+
+        //get array indexes
+        int g1Row = g1Shape.Row;
+        int g1Column = g1Shape.Column;
+
+        shapes[g1Row, g1Column] = g2;
     }
 
     private IEnumerable<GameObject> GetEntireRow(GameObject go)

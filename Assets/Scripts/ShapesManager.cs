@@ -157,6 +157,19 @@ public class ShapesManager : MonoBehaviour
         shapes[row, column] = go;
     }
 
+    private GameObject InstantiateAndPlaceConverted(int row, int column, GameObject newCandy)
+    {
+        GameObject go = Instantiate(newCandy,
+            BottomRight + new Vector2(column * CandySize.x, row * CandySize.y), Quaternion.identity)
+            as GameObject;
+
+        //assign the specific properties
+        go.GetComponent<Shape>().Assign(newCandy.GetComponent<Shape>().Type, row, column);
+        shapes[row, column] = go;
+
+        return go;
+    }
+
     private void SetupSpawnPositions()
     {
         //create the spawn positions for the new shapes (will pop from the 'ceiling')
@@ -490,7 +503,7 @@ public class ShapesManager : MonoBehaviour
         StartCheckForPotentialMatches();
     }
 
-    public IEnumerator ClearBlock(GameObject hitGo)
+    public IEnumerator ClearBlock(GameObject block)
     {
         bool isBall = false;
         bool isRef = false;
@@ -509,7 +522,7 @@ public class ShapesManager : MonoBehaviour
         int numGoalies = 0;
 
         IEnumerable<GameObject> totalMatches;
-        var sameBlocks = shapes.GetBlockInEntireBoard(hitGo);
+        var sameBlocks = shapes.GetBlockInEntireBoard(block);
 
         foreach (var item in sameBlocks)
         {
@@ -648,6 +661,289 @@ public class ShapesManager : MonoBehaviour
             //search if there are matches with the new/collapsed items
             totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
                 Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+        }
+
+        StartCheckForPotentialMatches();
+    }
+
+    public IEnumerator ConvertBlock(GameObject block, GameObject convertTo)
+    {
+        bool isBall = false;
+        bool isRef = false;
+        bool isBlue = false;
+        bool isGreen = false;
+        bool isRed = false;
+        bool isCoin = false;
+        bool isGoalie = false;
+
+        int numBalls = 0;
+        int numRefs = 0;
+        int numBlues = 0;
+        int numGreens = 0;
+        int numReds = 0;
+        int numCoins = 0;
+        int numGoalies = 0;
+
+        var sameBlocks = shapes.GetBlockInEntireBoard(block);
+        List<GameObject> convertedBlocks = new List<GameObject>();
+        IEnumerable<GameObject> totalMatches;
+
+        foreach (var item in sameBlocks)
+        {
+            int row = item.GetComponent<Shape>().Row;
+            int column = item.GetComponent<Shape>().Column;
+            shapes.Remove(item);
+            RemoveFromScene(item);
+            convertedBlocks.Add(InstantiateAndPlaceConverted(row, column, convertTo));
+        }
+
+        yield return new WaitForSeconds(0.2f);
+
+        foreach (GameObject c in convertedBlocks)
+        {
+            if (c != null)
+            {
+                //get the matches via the helper methods
+                MatchesInfo convertMatchesInfo = shapes.GetMatches(c);
+
+                totalMatches = convertMatchesInfo.MatchedBlock;
+
+
+                while (totalMatches.Count() >= Constants.MinimumMatches)
+                {
+                    isBall = false;
+                    isRef = false;
+                    isBlue = false;
+                    isGreen = false;
+                    isRed = false;
+                    isCoin = false;
+                    isGoalie = false;
+
+                    numBalls = 0;
+                    numRefs = 0;
+                    numBlues = 0;
+                    numGreens = 0;
+                    numReds = 0;
+                    numCoins = 0;
+                    numGoalies = 0;
+
+                    soundManager.PlayCrincle();
+
+                    foreach (var item in totalMatches)
+                    {
+                        if (item.GetComponent<Shape>().Type == "Ball")
+                        {
+                            isBall = true;
+                            numBalls++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "Ref")
+                        {
+                            isRef = true;
+                            numRefs++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "player_blue")
+                        {
+                            isBlue = true;
+                            numBlues++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "player_green")
+                        {
+                            isGreen = true;
+                            numGreens++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "player_red")
+                        {
+                            isRed = true;
+                            numReds++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "Coin")
+                        {
+                            isCoin = true;
+                            numCoins++;
+                        }
+                        else if (item.GetComponent<Shape>().Type == "Goalie")
+                        {
+                            isGoalie = true;
+                            numGoalies++;
+                        }
+
+                        shapes.Remove(item);
+                        RemoveFromScene(item);
+                    }
+
+                    if (isBall)
+                    {
+                        DealDamage(numBalls);
+                    }
+                    if (isRef)
+                    {
+                        AddAttribute(0, numRefs, false);
+                    }
+                    if (isBlue)
+                    {
+                        AddAttribute(1, numBlues, false);
+                    }
+                    if (isGreen)
+                    {
+                        AddAttribute(2, numGreens, false);
+                    }
+                    if (isRed)
+                    {
+                        AddAttribute(3, numReds, false);
+                    }
+                    if (isCoin)
+                    {
+                        AddCoins(numCoins);
+                    }
+                    if (isGoalie)
+                    {
+                        RegainHp(numGoalies);
+                    }
+
+                    //get the columns that we had a collapse
+                    var columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
+
+                    //collapse the ones gone
+                    var collapsedCandyInfo = shapes.Collapse(columns);
+                    //create new ones
+                    var newCandyInfo = CreateNewCandyInSpecificColumns(columns);
+
+                    int maxDistance = Mathf.Max(collapsedCandyInfo.MaxDistance, newCandyInfo.MaxDistance);
+
+                    MoveAndAnimate(newCandyInfo.AlteredCandy, maxDistance);
+                    MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
+
+                    //will wait for both of the above animations
+                    yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
+
+                    //search if there are matches with the new/collapsed items
+                    totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
+                        Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+                }
+            }
+        }
+
+        yield return new WaitForSeconds(1f);
+
+        foreach (GameObject c in GameObject.FindGameObjectsWithTag(convertTo.GetComponent<Shape>().Type))
+        {
+            //get the matches via the helper methods
+            MatchesInfo convertMatchesInfo = shapes.GetMatches(c);
+
+            totalMatches = convertMatchesInfo.MatchedBlock;
+
+
+            while (totalMatches.Count() >= Constants.MinimumMatches)
+            {
+                isBall = false;
+                isRef = false;
+                isBlue = false;
+                isGreen = false;
+                isRed = false;
+                isCoin = false;
+                isGoalie = false;
+
+                numBalls = 0;
+                numRefs = 0;
+                numBlues = 0;
+                numGreens = 0;
+                numReds = 0;
+                numCoins = 0;
+                numGoalies = 0;
+
+                soundManager.PlayCrincle();
+
+                foreach (var item in totalMatches)
+                {
+                    if (item.GetComponent<Shape>().Type == "Ball")
+                    {
+                        isBall = true;
+                        numBalls++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "Ref")
+                    {
+                        isRef = true;
+                        numRefs++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "player_blue")
+                    {
+                        isBlue = true;
+                        numBlues++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "player_green")
+                    {
+                        isGreen = true;
+                        numGreens++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "player_red")
+                    {
+                        isRed = true;
+                        numReds++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "Coin")
+                    {
+                        isCoin = true;
+                        numCoins++;
+                    }
+                    else if (item.GetComponent<Shape>().Type == "Goalie")
+                    {
+                        isGoalie = true;
+                        numGoalies++;
+                    }
+
+                    shapes.Remove(item);
+                    RemoveFromScene(item);
+                }
+
+                if (isBall)
+                {
+                    DealDamage(numBalls);
+                }
+                if (isRef)
+                {
+                    AddAttribute(0, numRefs, false);
+                }
+                if (isBlue)
+                {
+                    AddAttribute(1, numBlues, false);
+                }
+                if (isGreen)
+                {
+                    AddAttribute(2, numGreens, false);
+                }
+                if (isRed)
+                {
+                    AddAttribute(3, numReds, false);
+                }
+                if (isCoin)
+                {
+                    AddCoins(numCoins);
+                }
+                if (isGoalie)
+                {
+                    RegainHp(numGoalies);
+                }
+
+                //get the columns that we had a collapse
+                var columns = totalMatches.Select(go => go.GetComponent<Shape>().Column).Distinct();
+
+                //collapse the ones gone
+                var collapsedCandyInfo = shapes.Collapse(columns);
+                //create new ones
+                var newCandyInfo = CreateNewCandyInSpecificColumns(columns);
+
+                int maxDistance = Mathf.Max(collapsedCandyInfo.MaxDistance, newCandyInfo.MaxDistance);
+
+                MoveAndAnimate(newCandyInfo.AlteredCandy, maxDistance);
+                MoveAndAnimate(collapsedCandyInfo.AlteredCandy, maxDistance);
+
+                //will wait for both of the above animations
+                yield return new WaitForSeconds(Constants.MoveAnimationMinDuration * maxDistance);
+
+                //search if there are matches with the new/collapsed items
+                totalMatches = shapes.GetMatches(collapsedCandyInfo.AlteredCandy).
+                    Union(shapes.GetMatches(newCandyInfo.AlteredCandy)).Distinct();
+            }
         }
 
         StartCheckForPotentialMatches();
