@@ -22,8 +22,7 @@ public class AbilityManager : MonoBehaviour {
         shapesManager = FindObjectOfType<ShapesManager>();
 	}
 	
-	// Update is called once per frame
-	void Update () {
+	public void ChooseAbility (int index) {
         int turn = shapesManager.GetTurn();
 
         if (locked != turn && locked != 0)
@@ -43,15 +42,14 @@ public class AbilityManager : MonoBehaviour {
             return;
         }
 
-        if (Input.inputString != "" && enableAbilities)
+        if (enableAbilities)
         {
-            enableAbilities = false;
-            int choice = Int32.Parse(Input.inputString);            
-            abilities[choice - 1].GetComponent<Ability>().Execute();
+            enableAbilities = false;         
+            abilities[index].GetComponent<Ability>().Execute();
 
             if (enoughResource)
             {
-                abilityText.text = abilities[choice - 1].GetComponent<Ability>().message;
+                abilityText.text = abilities[index].GetComponent<Ability>().message;
                 StartCoroutine(DisplayText());
                 StartCoroutine(WaitBeforeChangeTurn());
             }

@@ -20,7 +20,47 @@ public class Ability : MonoBehaviour {
     public bool convertBlocks = false;
     public GameObject originalBlock, toConvertBlock;
 
+    public bool buttonEnabled = true;
+
     private ShapesManager shapeManager;
+
+    void Update()
+    {
+        shapeManager = FindObjectOfType<ShapesManager>();
+        int turn = shapeManager.GetTurn();
+
+        if (turn == 1)
+        {
+            //Check to see if the player has enough resources for this ability and enable its button accordingly
+            for (int i = 0; i < resources.Length; i++)
+            {
+                if (resources[i] > shapeManager.p1Attr[i])
+                {
+                    buttonEnabled = false;
+                    return;
+                }
+                else
+                {
+                    buttonEnabled = true;
+                }
+            }
+        }
+        else if (turn == 2)
+        {
+            for (int i = 0; i < resources.Length; i++)
+            {
+                if (resources[i] > shapeManager.p2Attr[i])
+                {
+                    buttonEnabled = false;
+                    return;
+                }
+                else
+                {
+                    buttonEnabled = true;
+                }
+            }
+        }
+    }
 
     public void Execute()
     {
@@ -35,14 +75,12 @@ public class Ability : MonoBehaviour {
             {
                 if (resources[i] > shapeManager.p1Attr[i])
                 {
-                    Debug.Log("1");
                     enoughResources = false;
-                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;                    
                     return;
                 }
                 else
-                {
-                    Debug.Log("2");
+                {                    
                     GameObject.FindObjectOfType<AbilityManager>().enoughResource = true;
                 }
             }
@@ -60,11 +98,11 @@ public class Ability : MonoBehaviour {
                 if (resources[i] > shapeManager.p2Attr[i])
                 {
                     enoughResources = false;
-                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;                    
                     return;
                 }
                 else
-                {
+                {                    
                     GameObject.FindObjectOfType<AbilityManager>().enoughResource = true;
                 }
             }

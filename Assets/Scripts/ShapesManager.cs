@@ -1239,6 +1239,17 @@ public class ShapesManager : MonoBehaviour
         {
             if (turn == 1)
             {
+                //If the player uses an ability and we want to drain attribute
+                if (amount < 0)
+                {
+                    attributeGain *= -1;
+                    drainAttribute = true;
+                }
+                else
+                {
+                    drainAttribute = false;
+                }
+
                 p1Attr[type] += amount;
                 attrBars[type].size = p1Attr[type] / 20f;
                 attrTexts[type].text = p1Attr[type].ToString();
@@ -1249,10 +1260,20 @@ public class ShapesManager : MonoBehaviour
                     p1Attr[type] = 20;
                     attrBars[type].size = 20;
                     attrTexts[type].text = "20";
-                }
+                }                
             }
             else if (turn == 2)
             {
+                if (amount < 0)
+                {
+                    attributeGain *= -1;
+                    drainAttribute = true;
+                }
+                else
+                {
+                    drainAttribute = false;
+                }
+
                 //+4s are there to make sure we change the bars and texts for player 2
                 p2Attr[type] += amount;
                 attrBars[type + 4].size = p2Attr[type] / 20f;
@@ -1264,7 +1285,7 @@ public class ShapesManager : MonoBehaviour
                     p2Attr[type] = 20;
                     attrBars[type + 4].size = 20;
                     attrTexts[type + 4].text = "20";
-                }
+                }                
             }
         }
     }
