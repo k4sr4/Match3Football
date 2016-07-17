@@ -6,8 +6,16 @@ public class AttributeTextScript : MonoBehaviour {
 
     void Awake()
     {
-        GetComponent<Text>().text = "+" + FindObjectOfType<ShapesManager>().GetAttributeGain().ToString();
-        GetComponent<Text>().color = Color.green;
+        if (GameObject.FindObjectOfType<ShapesManager>().drainAttribute)
+        {
+            GetComponent<Text>().text = "-" + FindObjectOfType<ShapesManager>().GetAttributeGain().ToString();
+            GetComponent<Text>().color = Color.red;
+        }
+        else
+        {
+            GetComponent<Text>().text = "+" + FindObjectOfType<ShapesManager>().GetAttributeGain().ToString();
+            GetComponent<Text>().color = Color.green;
+        }
 
         if (FindObjectOfType<ShapesManager>().GetTurn() == 1)
             this.transform.SetParent(GameObject.Find("P1Avatar").transform, false);

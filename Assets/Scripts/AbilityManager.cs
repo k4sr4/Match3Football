@@ -11,6 +11,8 @@ public class AbilityManager : MonoBehaviour {
     public bool p1Lock = false;
     public bool p2Lock = false;
 
+    public bool enoughResource = true;
+
     private bool enableAbilities = true;
     private int locked = 0;
     private ShapesManager shapesManager;
@@ -44,11 +46,17 @@ public class AbilityManager : MonoBehaviour {
         if (Input.inputString != "" && enableAbilities)
         {
             enableAbilities = false;
-            int choice = Int32.Parse(Input.inputString);
-            abilityText.text = abilities[choice - 1].GetComponent<Ability>().message;
-            StartCoroutine(DisplayText());
+            int choice = Int32.Parse(Input.inputString);            
             abilities[choice - 1].GetComponent<Ability>().Execute();
-            StartCoroutine(WaitBeforeChangeTurn());
+
+            if (enoughResource)
+            {
+                abilityText.text = abilities[choice - 1].GetComponent<Ability>().message;
+                StartCoroutine(DisplayText());
+                StartCoroutine(WaitBeforeChangeTurn());
+            }
+
+            enableAbilities = true;
         }
 	}
 
@@ -64,7 +72,6 @@ public class AbilityManager : MonoBehaviour {
     IEnumerator WaitBeforeChangeTurn()
     {        
         yield return new WaitForSeconds(1.5f);
-        GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();
-        enableAbilities = true;
+        GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();        
     }
 }

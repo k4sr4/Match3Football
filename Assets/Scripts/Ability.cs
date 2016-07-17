@@ -22,17 +22,6 @@ public class Ability : MonoBehaviour {
 
     private ShapesManager shapeManager;
 
-	// Use this for initialization
-	void Start () 
-    {
-        
-	}
-	
-	// Update is called once per frame
-	void Update () {
-	    
-	}
-
     public void Execute()
     {
         shapeManager = FindObjectOfType<ShapesManager>();
@@ -41,14 +30,25 @@ public class Ability : MonoBehaviour {
 
         if (turn == 1)
         {
+            //Check to see if the player has enough resources for this ability
             for (int i = 0; i < resources.Length; i++)
             {
                 if (resources[i] > shapeManager.p1Attr[i])
+                {
+                    Debug.Log("1");
                     enoughResources = false;
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;
+                    return;
+                }
+                else
+                {
+                    Debug.Log("2");
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = true;
+                }
             }
 
             //Lock other player's abilities for 1 turn
-            if (lockAbilities)
+            if (lockAbilities && enoughResources)
             {
                 FindObjectOfType<AbilityManager>().p2Lock = true;
             }
@@ -58,10 +58,18 @@ public class Ability : MonoBehaviour {
             for (int i = 0; i < resources.Length; i++)
             {
                 if (resources[i] > shapeManager.p2Attr[i])
+                {
                     enoughResources = false;
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = false;
+                    return;
+                }
+                else
+                {
+                    GameObject.FindObjectOfType<AbilityManager>().enoughResource = true;
+                }
             }
 
-            if (lockAbilities)
+            if (lockAbilities && enoughResources)
             {
                 FindObjectOfType<AbilityManager>().p1Lock = true;
             }

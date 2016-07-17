@@ -54,6 +54,7 @@ public class ShapesManager : MonoBehaviour
     public Text[] attrTexts;
     public Text attributeGainText;
     public int attributeGain;
+    public bool drainAttribute = false;
 
     private int p1Coins = 0;
     private int p2Coins = 0;
@@ -1199,13 +1200,14 @@ public class ShapesManager : MonoBehaviour
 
         if (drain)
         {
+            drainAttribute = true;
             if (turn == 1)
             {
                 //+4s are there to make sure we change the bars and texts for player 2
                 p2Attr[type] -= amount;
                 attrBars[type + 4].size = p2Attr[type] / 20f;
                 attrTexts[type + 4].text = p2Attr[type].ToString();
-                //Instantiate(attributeGainText, new Vector3(attrBars[type + 6].transform.localPosition.x + 52f, -165f, 0f), Quaternion.identity);
+                Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 520f, -165f, 0f), Quaternion.identity);
 
                 if (p2Attr[type] <= 0)
                 {
@@ -1213,13 +1215,15 @@ public class ShapesManager : MonoBehaviour
                     attrBars[type + 4].size = 0;
                     attrTexts[type + 4].text = "0";
                 }
+
+                drainAttribute = false;
             }
             else if (turn == 2)
             {                
                 p1Attr[type] -= amount;
                 attrBars[type].size = p1Attr[type] / 20f;
                 attrTexts[type].text = p1Attr[type].ToString();
-                //Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 45f, -165f, 0f), Quaternion.identity);
+                Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 520f, -165f, 0f), Quaternion.identity);
 
                 if (p1Attr[type] <= 0)
                 {
@@ -1227,6 +1231,8 @@ public class ShapesManager : MonoBehaviour
                     attrBars[type].size = 0;
                     attrTexts[type].text = "0";
                 }
+
+                drainAttribute = false;
             }
         }
         else
