@@ -22,7 +22,7 @@ public class AbilityManager : MonoBehaviour {
         shapesManager = FindObjectOfType<ShapesManager>();
 	}
 	
-	public void ChooseAbility (int index) {
+	public void ChooseAbility (int index) {        
         int turn = shapesManager.GetTurn();
 
         if (locked != turn && locked != 0)
@@ -70,6 +70,7 @@ public class AbilityManager : MonoBehaviour {
     IEnumerator WaitBeforeChangeTurn()
     {        
         yield return new WaitForSeconds(1.5f);
-        GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();        
+        if (!shapesManager.timedTurns)
+            GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();        
     }
 }

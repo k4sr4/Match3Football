@@ -66,7 +66,7 @@ public class ShapesManager : MonoBehaviour
     public bool timedTurns = false;
     public bool AI = false;
 
-    public bool endWithGoals = false;
+    public bool endWithGoals = true;
     public int goalLimit = 2;
 
     public bool endWithTime = false;
@@ -266,7 +266,7 @@ public class ShapesManager : MonoBehaviour
         {
             if (timeRemaining > 0)
             {
-                minutes = (timeRemaining / 60) - 1;
+                minutes = (timeRemaining / 60);
                 seconds = timeRemaining % 60;
 
                 totalTimeText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
@@ -1172,7 +1172,7 @@ public class ShapesManager : MonoBehaviour
             healthBar2.size = p2Health / 100f;
             hp2.text = p2Health.ToString();
 
-            if (goals1 == goalLimit)
+            if (goals1 == goalLimit && endWithGoals)
             {
                 endPanel.SetActive(true);
                 endMsg.text = "Player 1 Wins!";
@@ -1186,7 +1186,7 @@ public class ShapesManager : MonoBehaviour
             healthBar1.size = p1Health / 100f;
             hp1.text = p1Health.ToString();
 
-            if (goals2 == goalLimit)
+            if (goals2 == goalLimit && endWithGoals)
             {
                 endPanel.SetActive(true);
                 endMsg.text = "Player 2 Wins!";
