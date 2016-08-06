@@ -1207,7 +1207,7 @@ public class ShapesManager : MonoBehaviour
                 p2Attr[type] -= amount;
                 attrBars[type + 4].size = p2Attr[type] / 20f;
                 attrTexts[type + 4].text = p2Attr[type].ToString();
-                Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 520f, -165f, 0f), Quaternion.identity);
+                Instantiate(attributeGainText, new Vector3(attrBars[type + 4].transform.localPosition.x + 652f, -165f, 0f), Quaternion.identity);
 
                 if (p2Attr[type] <= 0)
                 {
@@ -1223,7 +1223,7 @@ public class ShapesManager : MonoBehaviour
                 p1Attr[type] -= amount;
                 attrBars[type].size = p1Attr[type] / 20f;
                 attrTexts[type].text = p1Attr[type].ToString();
-                Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 520f, -165f, 0f), Quaternion.identity);
+                Instantiate(attributeGainText, new Vector3(attrBars[type].transform.localPosition.x - 645f, -165f, 0f), Quaternion.identity);
 
                 if (p1Attr[type] <= 0)
                 {

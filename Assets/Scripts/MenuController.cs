@@ -55,7 +55,7 @@ public class MenuController : MonoBehaviour {
 
     public void TimeChanged()
     {
-        shapesManager.timeLimit = Int32.Parse(timeInput.GetComponent<InputField>().text);
+        shapesManager.timeLimit = Int32.Parse(timeInput.GetComponent<InputField>().text) * 60;
     }
 
     public void AIMode()
