@@ -11,7 +11,7 @@ public class HpGainTextScript : MonoBehaviour {
 
     void Awake()
     {
-        GetComponent<Text>().text = FindObjectOfType<ShapesManager>().hpGain.ToString();
+        GetComponent<Text>().text = "+" + FindObjectOfType<ShapesManager>().hpGain.ToString();
 
         if (FindObjectOfType<ShapesManager>().GetTurn() == 1)
         {
