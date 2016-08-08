@@ -30,7 +30,7 @@ public class ShapesManager : MonoBehaviour
     public Text player1text, player2text;
     
     public Text timerText;
-    public float turnTime = 10f;
+    public float turnTime = 30f;
     float minutes;
     float seconds;
     public Text bonusText;
@@ -243,23 +243,17 @@ public class ShapesManager : MonoBehaviour
         }
 
         //handles the change turns in timed turn mode
-        if (timedTurns)
+        if (turnTime > 0)
         {
-            if (turnTime > 0)
-            {
-                minutes = turnTime / 60;
-                seconds = turnTime % 60;
+            timerText.text = turnTime.ToString("0");
 
-                timerText.text = string.Format("{0:00}:{1:00}", minutes, seconds);
-
-                turnTime -= Time.deltaTime;
-            }
-            else
-            {
-                ChangeTurn();
-                turnTime = 10f;
-            }
+            turnTime -= Time.deltaTime;
         }
+        else
+        {
+            ChangeTurn();            
+        }
+        
 
         //handles the total time when time is the end condition
         if (endWithTime)
@@ -316,6 +310,8 @@ public class ShapesManager : MonoBehaviour
             player2text.color = Color.black;
             player2text.fontSize = 20;
         }
+
+        turnTime = 30f;
     }
 
     /// Modifies sorting layers for better appearance when dragging/animating
@@ -378,6 +374,7 @@ public class ShapesManager : MonoBehaviour
         if ((hitGomatchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus || hitGo2matchesInfo.MatchedBlock.Count() >= Constants.MinimumMatchesForBonus) && !timedTurns)
         {
             addBonus = true;
+            turnTime = 30f;
             StartCoroutine(DisplayText(bonusText));
         }
 
@@ -1371,14 +1368,26 @@ public class ShapesManager : MonoBehaviour
         Instantiate(hpGainText, new Vector3(0f, 0f, 0f), Quaternion.identity); //hp regain text
 
         if (turn == 1)
-        {
+        {            
             p1Health += amount;
+
+            if (p1Health > 100)
+            {
+                p1Health = 100;
+            }
+
             healthBar1.size = p1Health / 100f;
             hp1.text = p1Health.ToString();
         }
         else if (turn == 2)
         {
             p2Health += amount;
+
+            if (p2Health > 100)
+            {
+                p2Health = 100;
+            }
+
             healthBar2.size = p2Health / 100f;
             hp2.text = p2Health.ToString();
         }

@@ -14,33 +14,40 @@ public class AbilityManager : MonoBehaviour {
     public bool enoughResource = true;
 
     private bool enableAbilities = true;
-    private int locked = 0;
     private ShapesManager shapesManager;
+    private int turn = 1;
+    private bool allowLockSwitch = false;
 
 	// Use this for initialization
 	void Start () {
-        shapesManager = FindObjectOfType<ShapesManager>();
+        shapesManager = FindObjectOfType<ShapesManager>();        
 	}
-	
-	public void ChooseAbility (int index) {        
-        int turn = shapesManager.GetTurn();
 
-        if (locked != turn && locked != 0)
+    void Update()
+    {
+        turn = shapesManager.GetTurn();
+
+        if (turn == 1 && p2Lock && allowLockSwitch)
+        {
+            p2Lock = false;
+            allowLockSwitch = false;
+        }
+        if (turn == 2 && p1Lock && allowLockSwitch)
         {
             p1Lock = false;
-            p2Lock = false;
+            allowLockSwitch = false;
         }
-
+    }
+	
+	public void ChooseAbility (int index) {        
         if (turn == 1 && p1Lock)
         {
-            locked = 1;
             return;
         }
         if (turn == 2 && p2Lock)
         {
-            locked = 2;
             return;
-        }
+        }        
 
         if (enableAbilities)
         {
@@ -71,6 +78,10 @@ public class AbilityManager : MonoBehaviour {
     {        
         yield return new WaitForSeconds(1.5f);
         if (!shapesManager.timedTurns)
-            GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();        
+        {
+            GameObject.FindObjectOfType<ShapesManager>().ChangeTurn();
+            if (p1Lock || p2Lock)
+                allowLockSwitch = true;            
+        }
     }
 }
